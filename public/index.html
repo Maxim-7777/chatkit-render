@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>e-mobilwerkstatt Chat</title>
+
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
+</head>
+<body style="margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#fff;">
+  <div style="padding:14px;border-bottom:1px solid #e5e7eb;font-weight:700;">
+    e-mobilwerkstatt.de Chat
+  </div>
+
+  <div id="my-chat" style="height:680px;"></div>
+
+  <script>
+    async function getClientSecret(currentClientSecret) {
+      const storedUserId = localStorage.getItem("chat_user_id");
+
+      if (!currentClientSecret) {
+        const res = await fetch("/api/chatkit/start", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ userId: storedUserId })
+        });
+        const data = await res.json();
+        if (data.userId) localStorage.setItem("chat_user_id", data.userId);
+        return data.client_secret;
+      }
+
+      const res = await fetch("/api/chatkit/refresh", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ userId: storedUserId, currentClientSecret })
+      });
+      const data = await res.json();
+      if (data.userId) localStorage.setItem("chat_user_id", data.userId);
+      return data.client_secret;
+    }
+
+    // ChatKit Web Component initialisieren
+    window.addEventListener("load", () => {
+      const el = document.getElementById("my-chat");
+      el.setOptions({
+        api: { getClientSecret }
+      });
+    });
+  </script>
+</body>
+</html>
