@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>e-mobilwerkstatt Chat</title>
 
-  <script
-    src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
-    async
-  ></script>
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
 </head>
 
 <body style="margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#fff;">
@@ -16,7 +13,8 @@
     e-mobilwerkstatt.de Chat
   </div>
 
-  <div id="chat" style="height:680px;"></div>
+  <!-- WICHTIG: Das muss openai-chatkit sein, kein div -->
+  <openai-chatkit id="my-chat" style="height:680px;display:block;"></openai-chatkit>
 
   <script>
     async function getClientSecret(currentClientSecret) {
@@ -43,19 +41,17 @@
       return data.client_secret;
     }
 
-    // Warten bis chatkit.js geladen ist (weil async)
-    function waitForChatkit() {
-      if (window.chatkit && typeof window.chatkit.setOptions === "function") {
-        window.chatkit.setOptions({
-          target: "#chat",
-          api: { getClientSecret }
-        });
+    // Script lädt async, also warten bis <openai-chatkit> bereit ist
+    function initWhenReady() {
+      const chatkit = document.getElementById("my-chat");
+      if (chatkit && typeof chatkit.setOptions === "function") {
+        chatkit.setOptions({ api: { getClientSecret } });
         return;
       }
-      setTimeout(waitForChatkit, 100);
+      setTimeout(initWhenReady, 100);
     }
 
-    waitForChatkit();
+    initWhenReady();
   </script>
 </body>
 </html>
